@@ -10,7 +10,10 @@ Aufruf ist:
 ./scripts/vm-lab.sh create
 ```
 
-Alle drei Gäste werden mit 16 GiB RAM, 4 vCPUs und virtio-Disk/NIC angelegt.
+Alle drei Gäste werden mit 16 GiB RAM, 4 vCPUs und einer dynamisch wachsenden
+QCOW2-Disk mit maximal 200 GiB sowie virtio-Disk/NIC angelegt. Es werden keine
+ZVOLs verwendet. Der reale Speicherverbrauch der QCOW2-Dateien wächst nur mit
+den geschriebenen Gastdaten.
 Das sind Host-Kapazitätswerte pro VM; nicht alle drei sollten gleichzeitig auf
 einem Host mit knappem freien RAM laufen. Werte können über `VM_LAB_RAM_MIB`,
 `VM_LAB_VCPUS` und `VM_LAB_DISK_GIB` überschrieben werden.

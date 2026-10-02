@@ -6,7 +6,7 @@ ROOT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)
 STATE_DIR=${VM_LAB_STATE_DIR:-$ROOT_DIR/.vm-lab}
 ISO_DIR=${VM_LAB_ISO_DIR:-/var/lib/libvirt/boot}
 DISK_DIR=${VM_LAB_DISK_DIR:-/var/lib/libvirt/images}
-RAM_MIB=${VM_LAB_RAM_MIB:-16384}; VCPUS=${VM_LAB_VCPUS:-4}; DISK_GIB=${VM_LAB_DISK_GIB:-80}
+RAM_MIB=${VM_LAB_RAM_MIB:-16384}; VCPUS=${VM_LAB_VCPUS:-4}; DISK_GIB=${VM_LAB_DISK_GIB:-200}
 UBUNTU_URL=${UBUNTU_URL:-https://releases.ubuntu.com/24.04/ubuntu-24.04.5.1-desktop-amd64.iso}
 CACHYOS_URL=${CACHYOS_URL:-https://mirror.cachyos.org/ISO/desktop/260809/cachyos-desktop-linux-260809.iso}
 WIN11_ISO=${WIN11_ISO:-$ISO_DIR/Windows11.iso}
@@ -66,7 +66,7 @@ define_vm(){
   local name=$1 iso=$2 disk=$3 extra_cd=${4:-} vf=${5:-}; [[ -s "$iso" ]] || die "ISO fehlt: $iso"
   run_root qemu-img create -f qcow2 "$disk" "${DISK_GIB}G" >/dev/null 2>&1 || true
   if run_root virsh dominfo "$name" >/dev/null 2>&1; then log "$name existiert bereits"; return; fi
-  local -a disks=(--disk "path=$disk,format=qcow2,bus=virtio")
+  local -a disks=(--disk "path=$disk,format=qcow2,bus=virtio,cache=none,io=io_uring,discard=unmap,detect_zeroes=unmap")
   if [[ -n "$extra_cd" ]]; then
     [[ -s "$extra_cd" ]] || die "VirtIO-ISO fehlt: $extra_cd"
     disks+=(--disk "path=$extra_cd,device=cdrom,readonly=on")
