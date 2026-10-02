@@ -13,6 +13,8 @@ bleibt für bekannte Pfade erhalten.
 - `scripts/libvirt-vm-backup.sh`: VM-Backup
 - `scripts/win11-nvidia-passthrough-prepare.sh`: Passthrough-Hilfe
 - `configs/`, `config/sysctl.d/`, `winre/`: VM-Konfiguration und Gastreparatur
+- `scripts/intel-igpu-sriov-experiment.sh` und `docs/intel-igpu-sriov-experiment.md`:
+  getrennt gesicherter, experimenteller Iris-Xe-SR-IOV-Pfad
 
 `archive/` und die Analyse-Artefakte sind historische Referenzen. Sie sind kein
 aktiver Ausführungspfad und werden nicht automatisch ausgeführt.

@@ -15,6 +15,22 @@ Das sind Host-Kapazitätswerte pro VM; nicht alle drei sollten gleichzeitig auf
 einem Host mit knappem freien RAM laufen. Werte können über `VM_LAB_RAM_MIB`,
 `VM_LAB_VCPUS` und `VM_LAB_DISK_GIB` überschrieben werden.
 
+Nach einem erfolgreichen SR-IOV-Testboot weist `create` standardmäßig die drei
+VFs `0000:00:02.1`, `.2` und `.3` den Gästen CachyOS, Ubuntu und Windows 11 zu.
+Die physische GPU `0000:00:02.0` bleibt am Host. Die Zuordnung kann über
+`IGPU_VF_CACHYOS`, `IGPU_VF_UBUNTU` und `IGPU_VF_WIN11` geändert werden.
+`create` wird abgebrochen, wenn die erwartete VF noch nicht existiert.
+
+Der vorbereitende SR-IOV-Schritt ist separat:
+
+```bash
+./scripts/intel-igpu-sriov-experiment.sh prepare
+# über systemd-boot einmalig „CachyOS (Intel iGPU SR-IOV experiment)“ booten
+./scripts/intel-igpu-sriov-experiment.sh status
+echo 3 | sudo tee /sys/devices/pci0000:00/0000:00:02.0/sriov_numvfs
+./scripts/vm-lab.sh create
+```
+
 Ubuntu erhält eine Cloud-Init-Vorlage. CachyOS bleibt beim ersten Start
 interaktiv. Die Windows-Unattend-Datei ist absichtlich nur ein sicherer
 Template-Rahmen: ISO, Edition, Lizenz und lokales Kennwort müssen vor dem

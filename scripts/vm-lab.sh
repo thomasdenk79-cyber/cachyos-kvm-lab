@@ -10,6 +10,10 @@ RAM_MIB=${VM_LAB_RAM_MIB:-16384}; VCPUS=${VM_LAB_VCPUS:-4}; DISK_GIB=${VM_LAB_DI
 UBUNTU_URL=${UBUNTU_URL:-https://releases.ubuntu.com/24.04/ubuntu-24.04.5.1-desktop-amd64.iso}
 CACHYOS_URL=${CACHYOS_URL:-https://mirror.cachyos.org/ISO/desktop/260809/cachyos-desktop-linux-260809.iso}
 WIN11_ISO=${WIN11_ISO:-$ISO_DIR/Windows11.iso}
+VIRTIO_ISO=${VIRTIO_ISO:-$ISO_DIR/virtio-win.iso}
+IGPU_VF_CACHYOS=${IGPU_VF_CACHYOS:-0000:00:02.1}
+IGPU_VF_UBUNTU=${IGPU_VF_UBUNTU:-0000:00:02.2}
+IGPU_VF_WIN11=${IGPU_VF_WIN11:-0000:00:02.3}
 log(){ printf '[vm-lab] %s\n' "$*"; }; die(){ printf '[vm-lab] ERROR: %s\n' "$*" >&2; exit 1; }
 run_root(){ ((EUID==0)) && "$@" || sudo "$@"; }
 need(){ command -v "$1" >/dev/null || die "Fehlt: $1"; }
@@ -59,21 +63,32 @@ EOF
   log "Optionaler systemd-boot Eintrag vorbereitet: $STATE_DIR/boot/vm-lab-iommu.conf"
 }
 define_vm(){
-  local name=$1 iso=$2 disk=$3; [[ -s "$iso" ]] || die "ISO fehlt: $iso"
+  local name=$1 iso=$2 disk=$3 extra_cd=${4:-} vf=${5:-}; [[ -s "$iso" ]] || die "ISO fehlt: $iso"
   run_root qemu-img create -f qcow2 "$disk" "${DISK_GIB}G" >/dev/null 2>&1 || true
   if run_root virsh dominfo "$name" >/dev/null 2>&1; then log "$name existiert bereits"; return; fi
+  local -a disks=(--disk "path=$disk,format=qcow2,bus=virtio")
+  if [[ -n "$extra_cd" ]]; then
+    [[ -s "$extra_cd" ]] || die "VirtIO-ISO fehlt: $extra_cd"
+    disks+=(--disk "path=$extra_cd,device=cdrom,readonly=on")
+  fi
+  local -a hostdev=()
+  if [[ -n "$vf" ]]; then
+    [[ -e "/sys/bus/pci/devices/$vf" ]] || die "iGPU-VF fehlt: $vf (zuerst SR-IOV-Testboot und VF-Erzeugung durchführen)"
+    hostdev+=(--hostdev "$vf")
+  fi
   run_root virt-install --connect qemu:///system --name "$name" --memory "$RAM_MIB" --vcpus "$VCPUS" \
-    --cpu host-model --machine q35 --disk "path=$disk,format=qcow2,bus=virtio" \
+    --cpu host-model --machine q35 "${disks[@]}" \
+    "${hostdev[@]}" \
     --cdrom "$iso" --network network=default,model=virtio --graphics spice \
     --boot uefi --noautoconsole --osinfo detect=on,require=off
 }
 create(){
   run_root systemctl enable --now libvirtd.service 2>/dev/null || run_root systemctl enable --now virtqemud.socket virtnetworkd.socket
   run_root virsh net-start default 2>/dev/null || true; run_root virsh net-autostart default 2>/dev/null || true
-  define_vm cachyos-vm "$ISO_DIR/cachyos.iso" "$DISK_DIR/cachyos-vm.qcow2"
-  define_vm ubuntu24-vm "$ISO_DIR/ubuntu-24.04.iso" "$DISK_DIR/ubuntu24-vm.qcow2"
+  define_vm cachyos-vm "$ISO_DIR/cachyos.iso" "$DISK_DIR/cachyos-vm.qcow2" "" "$IGPU_VF_CACHYOS"
+  define_vm ubuntu24-vm "$ISO_DIR/ubuntu-24.04.iso" "$DISK_DIR/ubuntu24-vm.qcow2" "" "$IGPU_VF_UBUNTU"
   [[ -s "$WIN11_ISO" ]] || die "Windows-ISO fehlt; WIN11_ISO=/pfad/Windows11.iso setzen"
-  define_vm win11-vm "$WIN11_ISO" "$DISK_DIR/win11-vm.qcow2"
+  define_vm win11-vm "$WIN11_ISO" "$DISK_DIR/win11-vm.qcow2" "$VIRTIO_ISO" "$IGPU_VF_WIN11"
 }
-install_boot(){ [[ -d /boot/loader/entries ]] || die "/boot/loader/entries nicht gefunden"; run_root install -m 0644 "$STATE_DIR/boot/vm-lab-iommu.conf" /boot/loader/entries/vm-lab-iommu.conf; log "Eintrag installiert; Standard-Boot bleibt unverändert."; }
+install_boot(){ [[ -d /boot/loader/entries ]] || die "/boot/loader/entries nicht gefunden"; run_root install -m 0644 "$STATE_DIR/boot/vm-lab-iommu.conf" /boot/loader/entries/vm-lab-iommu.conf; log "IOMMU-Testeintrag installiert; Standard-Boot bleibt unverändert."; }
 case "${1:-prepare}" in prepare) prepare;; create) prepare; create;; install-boot) install_boot;; status) run_root virsh list --all;; *) echo "Usage: $0 {prepare|create|install-boot|status}"; exit 2;; esac
