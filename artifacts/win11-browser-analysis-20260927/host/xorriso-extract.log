@@ -1,0 +1,20 @@
+xorriso 1.5.8.pl02 : RockRidge filesystem manipulator, libburnia project.
+
+Copying of file objects from ISO image to disk filesystem is: Enabled
+xorriso : NOTE : Loading ISO image tree from LBA 0
+xorriso : UPDATE :      29 nodes read in 1 seconds
+Drive current: -indev '/var/lib/libvirt/boot/win11-siemens-support.iso'
+Media current: stdio file, overwriteable
+Media status : is written , is appendable
+Media summary: 1 session, 16914 data blocks, 33.0m data, 3179g free
+Volume id    : 'WIN11_SUPPORT'
+xorriso : UPDATE :       1 files restored (  3187b) in 1 seconds = 0.0xD
+Extracted from ISO image: file '/Autounattend.xml'='/tmp/win11-browser-analysis.j4NrgD/support-iso/Autounattend.xml'
+xorriso : UPDATE :       1 files restored (   899b) in 1 seconds = 0.0xD
+Extracted from ISO image: file '/Win11-PostInstall.ps1'='/tmp/win11-browser-analysis.j4NrgD/support-iso/Win11-PostInstall.ps1'
+xorriso : UPDATE :       1 files restored ( 18828b) in 1 seconds = 0.0xD
+Extracted from ISO image: file '/NetKVM/w11/amd64/netkvm.inf'='/tmp/win11-browser-analysis.j4NrgD/support-iso/NetKVM-netkvm.inf'
+xorriso : UPDATE :       1 files restored (  3203b) in 1 seconds = 0.0xD
+Extracted from ISO image: file '/vioscsi/w11/amd64/vioscsi.inf'='/tmp/win11-browser-analysis.j4NrgD/support-iso/vioscsi-vioscsi.inf'
+xorriso : UPDATE :       1 files restored ( 11630k) in 1 seconds = 8.6xD
+Extracted from ISO image: file '/qemu-ga-x86_64.msi'='/tmp/win11-browser-analysis.j4NrgD/support-iso/qemu-ga-x86_64.msi'

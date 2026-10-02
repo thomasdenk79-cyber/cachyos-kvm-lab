@@ -1,0 +1,39 @@
+NAME        TYPE   SIZE FSTYPE     PARTUUID                             PARTLABEL                    MOUNTPOINTS
+sda         disk   3.7T                                                                              
+├─sda1      part   200G exfat      68d1dc65-ebc1-4d08-8240-3d0c87f86f69 Ventoy                       
+├─sda2      part    32M vfat       a310a033-556b-4de6-b780-25c807718b1f VTOYEFI                      
+└─sda3      part   3.3T ntfs       7917b6e8-b0b5-49f5-86b1-673f1eb88ed7 DATA_NTFS                    
+nbd0        disk     0B                                                                              
+nbd1        disk     0B                                                                              
+nbd2        disk     0B                                                                              
+nbd3        disk     0B                                                                              
+nbd4        disk     0B                                                                              
+nbd5        disk     0B                                                                              
+nbd6        disk     0B                                                                              
+nbd7        disk     0B                                                                              
+nbd8        disk     0B                                                                              
+nbd9        disk     0B                                                                              
+nbd10       disk     0B                                                                              
+nbd11       disk     0B                                                                              
+nbd12       disk     0B                                                                              
+nbd13       disk     0B                                                                              
+nbd14       disk     0B                                                                              
+nbd15       disk     0B                                                                              
+zd0         disk   200G                                                                              
+zd16        disk   200G                                                                              
+zram0       disk    62G swap                                                                         [SWAP]
+nvme0n1     disk   1.8T                                                                              
+├─nvme0n1p1 part   1.8T zfs_member fe140c29-8e85-d94b-a17a-2f6a51d6d2c9 zfs-7c2836d3ab43b134         
+└─nvme0n1p9 part     8M            d7f5acf4-2f74-1c40-bcc1-1c589f7cdc9c                              
+nvme3n1     disk   1.8T                                                                              
+├─nvme3n1p1 part     2G vfat       219e56ae-e505-441e-b6ef-b4c210456fc5                              /boot
+└─nvme3n1p2 part   1.8T zfs_member 7016116b-95ad-44ec-87d7-9473f3cd1cf6                              
+nvme2n1     disk 476.9G                                                                              
+└─nvme2n1p1 part     1G vfat       d67e0944-6c37-4358-883a-bc220ea4f5bf ESP                          
+nvme1n1     disk 238.5G                                                                              
+├─nvme1n1p1 part    16M            e168c91e-70ef-45d9-ae95-8148c9fb13a2 Microsoft reserved partition 
+├─nvme1n1p2 part 234.8G BitLocker  93b7eeb3-12df-4fd9-92c3-10af7f93a7b4 Basic data partition         
+├─nvme1n1p3 part   902M ntfs       a7fee577-78d0-4c22-93de-6f09de50c21b                              
+├─nvme1n1p4 part   902M ntfs       4bd4e042-c4b2-4b9f-ab42-9da6a32e63b3                              
+├─nvme1n1p5 part     1G vfat       17653b99-6cdd-4858-9e30-b47a03821f97 EFI system partition         
+└─nvme1n1p6 part   902M ntfs       40766386-c200-461b-bcf2-538796f9ca02                              

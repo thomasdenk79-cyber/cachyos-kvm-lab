@@ -1,0 +1,16 @@
+Id:             8
+Name:           win11-siemens
+UUID:           e39af3f0-0d5f-4932-8934-9fe33d19ce86
+OS Type:        hvm
+State:          running
+CPU(s):         4
+CPU time:       44.0s
+Max memory:     16777216 KiB
+Used memory:    16777216 KiB
+Persistent:     yes
+Autostart:      disable
+Autostart Once: disable
+Managed save:   no
+Security model: none
+Security DOI:   0
+

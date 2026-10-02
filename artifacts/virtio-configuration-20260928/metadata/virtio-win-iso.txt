@@ -1,0 +1,7 @@
+# VirtIO configuration backup
+captured_utc=2026-09-28T02:22:14Z
+iso_path=/var/lib/libvirt/boot/virtio-win.iso
+iso_size_bytes=877373440
+iso_mode=644
+iso_mtime=2026-09-27 16:13:03.964408655 +0200
+303f7ae40dad495d6ae474fdc571df58958a4dbc5c37a522d80f9a203867949d  /var/lib/libvirt/boot/virtio-win.iso

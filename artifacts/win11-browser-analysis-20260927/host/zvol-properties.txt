@@ -1,0 +1,5 @@
+compression	off
+sync	standard
+primarycache	metadata
+volblocksize	64K
+volsize	200G

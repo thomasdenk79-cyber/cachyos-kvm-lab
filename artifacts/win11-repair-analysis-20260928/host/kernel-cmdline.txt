@@ -1,0 +1,1 @@
+initrd=\initramfs-linux-cachyos.img zfs=zpcachyos/ROOT/cos/root rw zswap.enabled=0 nowatchdog quiet splash

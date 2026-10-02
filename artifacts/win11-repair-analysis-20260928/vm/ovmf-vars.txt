@@ -1,0 +1,139 @@
+name=AUTOPILOT_MARKER guid=616e2ea6-af89-7eb3-f2ef-4e47368a657b size=39
+
+name=Boot0000 guid=guid:EfiGlobalVariable size=88
+  boot entry: title="BootManagerMenuApp" devpath=FvName(7cb8bdc9-f8eb-4f34-aaea-3ee4af6516a1)/FvFileName(eec25bdc-67f2-4d95-b1d5-f81b2039d11d)
+
+name=Boot0001 guid=guid:EfiGlobalVariable size=88
+  boot entry: title="EFI Firmware Setup" devpath=FvName(7cb8bdc9-f8eb-4f34-aaea-3ee4af6516a1)/FvFileName(462caa21-7614-4503-836e-8ab6f4662331)
+
+name=Boot0003 guid=guid:EfiGlobalVariable size=134
+  boot entry: title="UEFI QEMU HARDDISK WIN11-E39AF3F00D5F49" devpath=PciRoot()/PCI(dev=1f:2)/SATA(port=0) optdata=4eac0881119f594d850ee21a522c59b2
+
+name=Boot0004 guid=guid:EfiGlobalVariable size=300
+  boot entry: title="Windows Boot Manager" devpath=Partition(nr=1)/FilePath(\EFI\Microsoft\Boot\bootmgfw.efi) optdata=57494e444f5753000100000088000000780000004200430044004f0042004a004500430054003d007b00390064006500610038003600320063002d0035006300640064002d0034006500370030002d0061006300630031002d006600330032006200330034003400640034003700390035007d00000000000100000010000000040000007fff0400
+
+name=BootDebugPolicyApplied guid=guid:MicrosoftVendor size=1
+  byte: 0x2a
+
+name=BootOrder guid=guid:EfiGlobalVariable size=8
+  boot order: 0004, 0003, 0000, 0001
+
+name=BootingDeviceTypeInfo guid=guid:MicrosoftVendor size=4
+  dword: 0x00040000
+
+name=ConIn guid=guid:EfiGlobalVariable size=122
+  devpath: PciRoot()/PCI(dev=1f:0)/ACPI(hid=0x30341d0,uid=0x0)
+
+name=ConOut guid=guid:EfiGlobalVariable size=103
+  devpath: PciRoot()/PCI(dev=01:0)/GOP(adr=0x80010100)
+
+name=ConfigCIPolicyIndiv guid=guid:MicrosoftVendor size=48
+
+name=CurrentActivePolicy guid=guid:MicrosoftVendor size=1
+  byte: 0x00
+
+name=CurrentPolicy guid=guid:MicrosoftVendor size=1
+  byte: 0x04
+
+name=CustomMode guid=guid:EfiCustomModeEnable size=1
+  bool: off
+
+name=ErrOut guid=guid:EfiGlobalVariable size=73
+  devpath: PciRoot()/PCI(dev=1f:0)/ACPI(hid=0x50141d0,uid=0x0)/Msg(subtype=0xe)/Msg(subtype=0xa)
+
+name=HDDP guid=fab7e9e1-39dd-4f2b-8408-e20e906cb6de size=74
+
+name=KEK guid=guid:EfiGlobalVariable size=3066 time=2023-03-02 20:21:35+00:00
+  siglist type=guid:EfiCertX509 count=1
+    subject CN=Microsoft Corporation KEK CA 2011
+    issuer CN=Microsoft Corporation Third Party Marketplace Root
+  siglist type=guid:EfiCertX509 count=1
+    subject CN=Microsoft Corporation KEK 2K CA 2023
+    issuer CN=Microsoft RSA Devices Root CA 2021
+
+name=Key0000 guid=guid:EfiGlobalVariable size=14
+
+name=Key0001 guid=guid:EfiGlobalVariable size=14
+
+name=Lang guid=guid:EfiGlobalVariable size=4
+  ascii: "eng"
+
+name=MTC guid=guid:MtcVendor size=4
+  dword: 0x0000000f
+
+name=MemoryOverwriteRequestControl guid=e20939be-32d4-41be-a150-897f85d49829 size=1
+  byte: 0x11
+
+name=MemoryOverwriteRequestControlLock guid=bb983ccf-151d-40e1-a07b-4a17be168292 size=1
+  byte: 0x00
+
+name=MemoryTypeInformation guid=guid:EfiMemoryTypeInformation size=48
+
+name=OfflineUniqueIDEKPub guid=eaec226f-c9a3-477a-a826-ddc716cdc0e3 size=256
+
+name=OfflineUniqueIDEKPubCRC guid=eaec226f-c9a3-477a-a826-ddc716cdc0e3 size=4
+  dword: 0xb89c8b3b
+
+name=PBRDevicePath guid=a9b5f8d2-cb6d-42c2-bc01-b5ffaae4335e size=536
+
+name=PK guid=guid:EfiGlobalVariable size=1575 time=2023-09-21 20:28:26+00:00
+  siglist type=guid:EfiCertX509 count=1
+    subject CN=Windows OEM Devices PK
+    issuer CN=Microsoft RSA Third Party PCA 2023
+
+name=PlatformLang guid=guid:EfiGlobalVariable size=3
+  ascii: "en"
+
+name=RevocationList guid=guid:MicrosoftVendor size=1613
+
+name=SecureBootEnable guid=guid:EfiSecureBootEnableDisable size=1
+  bool: ON
+
+name=TCG2_CONFIGURATION guid=6339d487-26ba-424b-9a5d-687e25d740bc size=1
+  byte: 0x02
+
+name=TCG2_DEVICE_DETECTION guid=6339d487-26ba-424b-9a5d-687e25d740bc size=1
+  byte: 0x02
+
+name=TCG2_VERSION guid=6339d487-26ba-424b-9a5d-687e25d740bc size=16
+
+name=Timeout guid=guid:EfiGlobalVariable size=2
+  word: 0x0000
+
+name=UnlockID guid=eaec226f-c9a3-477a-a826-ddc716cdc0e3 size=32
+
+name=UnlockIDCopy guid=eaec226f-c9a3-477a-a826-ddc716cdc0e3 size=32
+
+name=VarErrorFlag guid=04b37fe8-f6ae-480b-bdd5-37d98c5e89aa size=1
+  byte: 0xff
+
+name=VendorKeysNv guid=9073e4e0-60ec-4b6e-9903-4c223c260f3c size=1
+  byte: 0x01
+
+name=VsmLocalKey2 guid=guid:MicrosoftVendor size=775
+
+name=VsmLocalKeyProtector guid=guid:MicrosoftVendor size=515
+
+name=certdb guid=guid:EfiCertDb size=4
+  dword: 0x00000004
+
+name=db guid=guid:EfiImageSecurityDatabase size=7636 time=2023-10-26 19:02:20+00:00
+  siglist type=guid:EfiCertX509 count=1
+    subject CN=Microsoft Windows Production PCA 2011
+    issuer CN=Microsoft Root Certificate Authority 2010
+  siglist type=guid:EfiCertX509 count=1
+    subject CN=Windows UEFI CA 2023
+    issuer CN=Microsoft Root Certificate Authority 2010
+  siglist type=guid:EfiCertX509 count=1
+    subject CN=Microsoft Corporation UEFI CA 2011
+    issuer CN=Microsoft Corporation Third Party Marketplace Root
+  siglist type=guid:EfiCertX509 count=1
+    subject CN=Microsoft UEFI CA 2023
+    issuer CN=Microsoft RSA Devices Root CA 2021
+  siglist type=guid:EfiCertX509 count=1
+    subject CN=Microsoft Option ROM UEFI CA 2023
+    issuer CN=Microsoft RSA Devices Root CA 2021
+
+name=dbx guid=guid:EfiImageSecurityDatabase size=76 time=2010-01-01 00:00:00+00:00
+  siglist type=guid:EfiCertSha256 count=1
+

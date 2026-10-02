@@ -1,0 +1,7 @@
+ Target   Source
+----------------------------------------------------------------------
+ sda      /dev/zvol/zpcachyos/vms/win11
+ sdb      /var/lib/libvirt/boot/Windows11-25H2-Official-Multi-DE.iso
+ sdc      /var/lib/libvirt/boot/virtio-win.iso
+ sdd      /var/lib/libvirt/boot/win11-siemens-support.iso
+

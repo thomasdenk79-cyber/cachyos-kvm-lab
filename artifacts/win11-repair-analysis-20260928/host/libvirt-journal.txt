@@ -1,0 +1,21 @@
+Sep 27 21:55:54 cachyos-x8664 libvirtd[1162]: Operation schlug fehl: Unable to find 'efi' firmware that is compatible with the current configuration
+Sep 27 21:56:25 cachyos-x8664 libvirtd[1162]: Operation schlug fehl: Unable to find 'efi' firmware that is compatible with the current configuration
+Sep 27 21:57:12 cachyos-x8664 libvirtd[1162]: cannot use feature-based firmware autoselection when firmware autoselection is disabled
+Sep 27 21:58:05 cachyos-x8664 libvirtd[1162]: Domain id=1 name='win11-siemens' uuid=e39af3f0-0d5f-4932-8934-9fe33d19ce86 is tainted: custom-monitor
+Sep 27 21:59:03 cachyos-x8664 libvirtd[1162]: Domain id=2 name='win11-siemens' uuid=e39af3f0-0d5f-4932-8934-9fe33d19ce86 is tainted: custom-monitor
+Sep 27 22:00:09 cachyos-x8664 libvirtd[1162]: Domain id=3 name='win11-siemens' uuid=e39af3f0-0d5f-4932-8934-9fe33d19ce86 is tainted: custom-monitor
+Sep 27 22:01:06 cachyos-x8664 libvirtd[1162]: XML Fehler: Invalid value for attribute 'model' in element 'watchdog': 'none'.
+Sep 27 22:01:34 cachyos-x8664 libvirtd[1162]: Domain id=4 name='win11-siemens' uuid=e39af3f0-0d5f-4932-8934-9fe33d19ce86 is tainted: custom-monitor
+Sep 27 22:07:06 cachyos-x8664 dnsmasq-dhcp[1240]: DHCPDISCOVER(virbr0) 52:54:00:df:a5:d1
+Sep 27 22:07:06 cachyos-x8664 dnsmasq-dhcp[1240]: DHCPOFFER(virbr0) 192.168.122.199 52:54:00:df:a5:d1
+Sep 27 22:07:06 cachyos-x8664 dnsmasq-dhcp[1240]: DHCPREQUEST(virbr0) 192.168.122.199 52:54:00:df:a5:d1
+Sep 27 22:07:06 cachyos-x8664 dnsmasq-dhcp[1240]: DHCPACK(virbr0) 192.168.122.199 52:54:00:df:a5:d1 SIEMENS-GQULTQ5
+Sep 27 22:08:48 cachyos-x8664 dnsmasq-dhcp[1240]: DHCPDISCOVER(virbr0) 52:54:00:df:a5:d1
+Sep 27 22:08:48 cachyos-x8664 dnsmasq-dhcp[1240]: DHCPOFFER(virbr0) 192.168.122.199 52:54:00:df:a5:d1
+Sep 27 22:08:48 cachyos-x8664 dnsmasq-dhcp[1240]: DHCPREQUEST(virbr0) 192.168.122.199 52:54:00:df:a5:d1
+Sep 27 22:08:48 cachyos-x8664 dnsmasq-dhcp[1240]: DHCPACK(virbr0) 192.168.122.199 52:54:00:df:a5:d1 SIEMENS-WIN11
+Sep 27 22:13:21 cachyos-x8664 dnsmasq-dhcp[1240]: DHCPDISCOVER(virbr0) 52:54:00:df:a5:d1
+Sep 27 22:13:21 cachyos-x8664 dnsmasq-dhcp[1240]: DHCPOFFER(virbr0) 192.168.122.199 52:54:00:df:a5:d1
+Sep 27 22:13:21 cachyos-x8664 dnsmasq-dhcp[1240]: DHCPREQUEST(virbr0) 192.168.122.199 52:54:00:df:a5:d1
+Sep 27 22:13:21 cachyos-x8664 dnsmasq-dhcp[1240]: DHCPACK(virbr0) 192.168.122.199 52:54:00:df:a5:d1 DINA
+Sep 28 01:42:47 cachyos-x8664 libvirtd[1162]: Operation schlug fehl: Unable to find 'efi' firmware that is compatible with the current configuration

@@ -1,0 +1,21 @@
+Sanitized excerpt reconstructed from the failed Windows 11 installation logs.
+
+CloudExperienceHostBroker:
+  Found 1 updates in collection
+  ZDP_Downloading
+  ZDP_Installing
+  Detected Reboot Required after ZDP install
+
+Windows Setup / BFSVC:
+  BfspCopyFile(G:\$WINDOWS.~BT\Sources\Boot\EFI\bootmgfw.efi,
+  \\?\GLOBALROOT\Device\HarddiskVolume1\EFI\Microsoft\Boot\bootmgfw.efi)
+  failed, Last Error = 0x3 (repeated attempts)
+  BCD: Failed to add system store from file
+  Status = c000000f
+
+SrtTrail.txt:
+  Disk metadata test: successful
+  Target OS test: successful
+  Volume contents test: successful
+  Startup manager diagnosis: successful
+  Filesystem/volume corruption: not reported

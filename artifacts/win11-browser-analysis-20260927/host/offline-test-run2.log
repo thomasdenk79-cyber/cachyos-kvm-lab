@@ -1,0 +1,16 @@
+[win11-vm] Credential looks like a Microsoft account; leaving local account/OOBE manual for MFA.
+[win11-vm] User z000g9hu was added to libvirt kvm; a new login session is required.
+[win11-vm] UFW/libvirt NAT enabled: virbr0 -> enp0s31f6; no inbound LAN-to-guest rule added
+setfacl: /run/media/z000g9hu/Ventoy/ISO/Imported: Operation not supported
+[win11-vm] ACL unsupported on /run/media/z000g9hu/Ventoy/ISO/Imported; using existing mount permissions
+setfacl: /run/media/z000g9hu/Ventoy/ISO: Operation not supported
+[win11-vm] Using existing staged media: /var/lib/libvirt/boot/Windows11-25H2-Official-Multi-DE.iso
+[win11-vm] Using existing staged media: /var/lib/libvirt/boot/virtio-win.iso
+[win11-vm] Using existing unattended support ISO: /var/lib/libvirt/boot/win11-siemens-support.iso
+[win11-vm] Fresh install requested: removing only the win11-siemens definition and zpcachyos/vms/win11
+vm.nr_hugepages = 0
+Domain 'win11-siemens' defined from /tmp/tmp.C4WF6kkeEK
+
+Domain 'win11-siemens' started
+
+[win11-vm] Done. VM state: running

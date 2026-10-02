@@ -1,0 +1,9 @@
+Previous failed installation:
+  ESP size: approximately 96 MiB usable from a 100 MiB partition
+  Used: 34 MiB
+  Free: 63 MiB
+  Use: 36%
+
+Current unattended configuration:
+  ESP size: 260 MiB
+  Observed use after setup: approximately 35 MiB / 256 MiB (14%)

@@ -1,0 +1,10 @@
+  pool: zpcachyos
+ state: ONLINE
+config:
+
+	NAME                                              STATE     READ WRITE CKSUM
+	zpcachyos                                         ONLINE       0     0     0
+	  7016116b-95ad-44ec-87d7-9473f3cd1cf6            ONLINE       0     0     0
+	  nvme-Samsung_SSD_990_PRO_2TB_S7DNNJ0X131552B_1  ONLINE       0     0     0
+
+errors: No known data errors

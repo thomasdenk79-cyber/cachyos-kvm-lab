@@ -1,0 +1,7 @@
+NAME                 PROPERTY      VALUE           SOURCE
+zpcachyos/vms/win11  volsize       200G            local
+zpcachyos/vms/win11  volblocksize  64K             -
+zpcachyos/vms/win11  compression   zstd-1          local
+zpcachyos/vms/win11  sync          standard        local
+zpcachyos/vms/win11  primarycache  metadata        local
+zpcachyos/vms/win11  volmode       dev             local

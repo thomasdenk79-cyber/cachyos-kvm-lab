@@ -1,0 +1,4 @@
+ Type    Device   Target   Source
+----------------------------------------------------------
+ block   disk     sda      /dev/zvol/zpcachyos/vms/win11
+
