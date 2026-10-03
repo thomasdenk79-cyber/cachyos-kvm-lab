@@ -56,3 +56,8 @@ virsh console ubuntu24-vm
 virsh shutdown <name>
 virsh undefine <name> --remove-all-storage   # bewusst destruktiv
 ```
+
+## VM-Lab 2026-10 (3er-Autobau)
+
+Neuer Skript-Satz: `scripts/lab/` (Kaltstart nach Host-Neustart: `./rebuild-all.sh`,
+Detailzustand: `handover.md`, Fakten: `memory.md`).

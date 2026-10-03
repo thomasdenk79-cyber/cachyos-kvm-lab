@@ -1,0 +1,26 @@
+#!/usr/bin/expect -f
+# 31-drive-cachyos.exp - steuert die CachyOS-Live-VM ueber die serielle Konsole.
+set timeout 900
+set vm [lindex $argv 0]
+spawn sudo virsh -c qemu:///system console --force $vm
+sleep 5
+send "\r"; send "\r"
+expect {
+  -re "login:" { send "root\r" }
+  -re {root@.*#} { }
+  timeout { }
+}
+expect {
+  -re {root@.*#} { }
+  "#" { }
+  timeout { send "\r"; exp_continue }
+}
+send "mkdir -p /mnt/cdrom; mount -o ro /dev/sr1 /mnt/cdrom || mount -o ro /dev/sr0 /mnt/cdrom\r"
+expect "#"
+send "bash /mnt/cdrom/cachyos-live.sh\r"
+set timeout 5400
+expect {
+  "LAB_INSTALL_DONE" { puts "\nINSTALL_OK"; }
+  timeout { puts "\nTIMEOUT_INSTALL"; exit 2 }
+}
+expect eof
