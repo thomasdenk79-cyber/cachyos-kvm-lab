@@ -31,13 +31,12 @@ autoinstall:
         id: esp
         device: disk0
         size: 2G
-        flag: boot
+        flag: esp
         number: 1
       - type: format
         id: fespcfg
         volume: esp
         fstype: fat32
-        vendor: EFI
       - type: partition
         id: rootp
         device: disk0
