@@ -1,5 +1,15 @@
 # Handover VM-Lab – STAND VOR HOST-RESTART (2026-10-03 ~08:10)
 
+## Vorrang: WSL-Sicherung 2026-10-06
+
+Dieses Repo war vor der Migrationsrunde sauber und bereits auf `origin/main`
+gesichert (`7d5097e`). Es wird samt neuem Uebergabehinweis erhalten, nicht
+ausgefuehrt. Alle folgenden VM-Zustaende und Rebuild-Schritte sind historische
+Aufzeichnungen; keine aktuelle Pruefung/Erlaubnis fuer VM-Neuaufbau auf WSL.
+VM-Disks und ISOs werden nicht als Git-Daten gesichert. Die zentrale
+Hostuebergabe steht in `llm-infra-setup`, Branch `turbo-c6-production`,
+`docs/WSL-MIGRATION.md`; `howto.md` liegt im lokalen privaten Migrations-ZIP.
+
 ## Kernbotschaft
 Nichts im VM-Status ist jetzigen Wert: alle drei qcow2-Disks ~7 MB (kein Installer
 hat substantiell geschrieben). Host-Neustart/Jellyfin-Pause kostet NULL. Danach

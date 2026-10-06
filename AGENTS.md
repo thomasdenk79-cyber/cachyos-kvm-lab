@@ -1,5 +1,13 @@
 # AGENTS.md – cachyos-kvm-lab
 
+## WSL-Migrationsauftrag 2026-10-06
+
+Aktuell nur Sicherung/Push und Uebergabe, kein VM-Rebuild. Die automatische
+Pflichtfortsetzung unten ist fuer diesen Auftrag ausgesetzt. Alte Host-/VM-
+Zustaende sind keine Fakten ueber den P16 Gen2. Zuerst `handover.md` und
+`llm-infra-setup` auf `turbo-c6-production`, `docs/WSL-MIGRATION.md`, lesen.
+VM-Disks und ISOs gehoeren nicht ins Git und sind separate Kopierposten.
+
 Regeln analog `../workstation-setup/AGENTS.md` (Commits klein+sprechend, push ohne
 Force, keine Geheimnisse ins Repo, `handover.md`/`memory.md` bei Übergabe pflegen).
 
