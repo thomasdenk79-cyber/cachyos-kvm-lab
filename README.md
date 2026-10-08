@@ -1,5 +1,9 @@
 # cachyos-kvm-lab
 
+**Live-Demo (echter Terminal-Mitschnitt):**
+
+![KVM-Lab CLI](docs/media/kvmlab.gif)
+
 > Status: alpha (Siemens Inner Source)\n
 
 Zentrale Ablage für die KVM-, libvirt-, QEMU-, Win11- und VM-Lab-Arbeiten auf
