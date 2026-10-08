@@ -1,5 +1,7 @@
 # cachyos-kvm-lab
 
+> Status: alpha (Siemens Inner Source)\n
+
 Zentrale Ablage für die KVM-, libvirt-, QEMU-, Win11- und VM-Lab-Arbeiten auf
 CachyOS. Die Migration aus `workstation-setup` ist in [MIGRATION.md](MIGRATION.md)
 dokumentiert.
