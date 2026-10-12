@@ -21,20 +21,25 @@ Aktionen: `workstation-setup/docs/virtualisierung-labor-20261013.md`
 1. **KVM-Gesundheitstest** (siehe oben).
 2. **IOMMU aktiv?** `intel_iommu=on iommu=pt` ist bereits in /etc/default/grub
    + update-grub ausgeführt (Backup `/etc/default/grub.bak-pre-iommu-20261013`).
-   Prüfen: `dmesg | grep -i 'iommu|dmar'`, `find /sys/kernel/iommu_groups -type l | wc -l`.
+   Prüfen: `dmesg | grep -iE 'iommu|dmar|DMAR'` und
+   `find /sys/kernel/iommu_groups -type l | wc -l` (Referenz VOR dem Patch:
+   bereits 29 Gruppen – Intel-IOMMU war Kernel-default-on; neu ist v.a. `pt`).
    Notfall beim Boot: GRUB-Menü `e`, beide Wörter löschen. Dauerhaft revert:
    `sudo sed -i 's/ intel_iommu=on iommu=pt//' /etc/default/grub && sudo update-grub`.
-3. **Venus-VM zu Ende bauen** (Definition: `/home/z000g9hu/vm-lab/kvm-venus.xml`):
-   - Stand: 200-G-qcow2 + CachyOS-ISO + OVMF-NVRAM-Template vorhanden;
-     Define/Start-Form folgt.
-   - Issues von gestern: (a) libvirt 10.0 hat `socket=`-Attribut am spice-Graphics
-     geschluckt aber nicht persistiert → TCP-Port → QEMU lehnt `gl`+TCP ab
-     ("SPICE GL support is local-only"). Nochmal sauber definieren:
-     `<graphics type='spice' socket='/var/lib/libvirt/qemu/kvm-venus.spice' autoport='no' keymap='de'>`
-     OHNE extra `<listen>`-Element; ifconfig gegen `sudo virsh dumpxml | grep -o socket=...`.
-     Falls wieder dropped: libvirt-Version ist 10.0.0 – Socket-Syntax prüfen mit
-     `sudo virsh help define`/Schema-Test, alternativ Test mit frischem
-     `virsh edit`-Roundtrip. (b) SeaBIOS → Triple-Fault: UEFI-OVMF-Pfad beibehalten.
+3. **Venus-VM zu Ende bauen**. STATUS-KORREKTUR (Review F1): kvm-venus ist
+   aktuell NICHT definiert (nur Disk/ISO/OVMF-Template existieren); Definition
+   liegt als Datei bereit: `/home/z000g9hu/vm-lab/kvm-venus.xml` – zuerst
+   `sudo virsh define` dieser Datei, dann Start.
+   - RECHTE-VORBEREITUNG (Review1 B3/B4): Socket unter
+     `/var/lib/libvirt/qemu/` erfordert QEMU-AppArmor-Profil + renderD128-Zugriff:
+     `echo ' owner /var/lib/libvirt/qemu/*.spice rw,' | sudo tee -a /etc/apparmor.d/local/abstractions/libvirt-qemu`
+     (falls Profil enforce ist; pruefen mit `sudo aa-status`), und
+     `sudo setfacl -m u:libvirt-qemu:rw /dev/dri/renderD128`.
+   - SPICE-Socket-Syntax: Review1 B1 meldet `socket=`+`autoport='no'`
+     schema-invalid; erst Original definieren, `sudo virsh dumpxml kvm-venus |
+     grep -o 'socket=[^ ']*'` gegenpruefen. Falls dropped:
+     `<listen type='socket'/>`-Variante laut Review1 validiert – XML dann aus
+     dem Live-dumpxml zurueckspielen, nicht aus der Datei. (b) SeaBIOS → Triple-Fault: UEFI-OVMF-Pfad beibehalten.
      (c) vmx/svm disable bleiben (BIOS hat nested VT-x disabled; sonst
      KVM-VMCS-Korruption wie oben!).
    - Viewer: `virt-viewer "spice+unix:///var/lib/libvirt/qemu/kvm-venus.spice"`
@@ -92,3 +97,67 @@ Aktionen: `workstation-setup/docs/virtualisierung-labor-20261013.md`
   Treiber-hostseitig 615.71.09 (= CUDA 13.4 UMD). Runtime-GPU-Code kommt aus
   torch/flashinfer-Eigeneinbauten, nicht aus dem Toolkit → neweres CUDA 13.x
   bringt für decode speed praktisch nichts (reasoning unten, review unten).
+
+## Viewer nach Reboot (Umgebung NICHT hardkodieren – Review F2)
+
+XAUTHORITY-Dateiname endet zufaellig (xauth_*), Display-Nummer wechselte heute
+auf :4. Deshalb ermitteln statt kopieren:
+
+```bash
+eval "$(systemctl --user show-environment | grep -E '^(DISPLAY|XAUTHORITY|WAYLAND_DISPLAY|XDG_RUNTIME_DIR)=')"
+virt-viewer -c qemu:///system kvm-siemens          # bzw. spice+unix-URI fuer venus
+```
+
+## Review-Flotte 2026-10-13 – Konsolidierte Anweisungen
+
+- **Backup-XML ~/vm-lab/kvm-siemens-backup-20261012-2346.xml niemals `virsh
+  define`n** – rollt still alle Tunings zurueck. Live-Soll-Check:
+  `sudo virsh dumpxml kvm-siemens | grep -E '<vcpu|262144|auto_glz'`.
+- **Snapshot nur so aufraeumen**: Revert rollt NUR die Disk (XML bleibt
+  getuned!); Loeschen nur mit `--metadata`:
+  `sudo virsh snapshot-delete kvm-siemens pre-tune-20261013 --metadata`
+  (sonst droht Bruch der External-Backing-Kette). Kettencheck:
+  `qemu-img info --backing-chain /var/lib/libvirt/images/kvm-siemens/kvm-siemens.qcow2`.
+  NVRAM/pflash ist NICHT im disk-only-Snapshot (doku-relevant).
+- **libvirt-Gruppe**: `sudo usermod -aG libvirt z000g9hu` + Re-Login
+  (Review B7 – dokumentierte virsh-Kommandos brauchen sonst immer sudo -n).
+- **VBox-Voll-Rueckbau** (Review R4 – purge allein reicht NICHT, Regel/Override
+  sind nicht paketgefuehrt): `sudo apt purge virtualbox-7.2 && sudo rm
+  /etc/udev/rules.d/60-vboxdrv.rules /etc/apt/sources.list.d/virtualbox.list
+  /usr/share/keyrings/intel-gpu-noble.list 2>/dev/null; sudo rm -rf
+  /etc/systemd/system/vboxdrv.service.d && sudo systemctl daemon-reload`.
+  (Oracle-Key: /usr/share/keyrings/oracle-virtualbox-2016.gpg.)
+- **VBox-Feinschliff**: TPM2 konfiguriert, greift erst nach VM-Neustart (B5);
+  Clipboard: `VBoxManage clipboard vb-win11 bidirectional` (B6).
+- **Intel SR-IOV: BLOCKED** – `intel-i915-dkms` 1.25.2 baut nicht gegen Kernel
+  7.0.0-38 (dkms-Fehler; Paket gepurgt, System sauber). Intel-Repo bleibt
+  eingerichtet. Retry bei neuerem Paket (`apt-cache madison intel-i915-dkms`)
+  oder Intel-gestuetztem Kernel. Hardware vorbereitet: sriov_totalvfs=7,
+  VF-ID a788; Distro-i915 ohne max_vfs-Parameter.
+- **KVM-Defekt final belegt** (Review R5): vmwrite-Burst 23:57, 0 neue,
+  refcnt=2 ohne Halter → Reboot einziger Fix.
+
+## Autostart Agenten-Infra – GEPRUEFT & GEHAERTET 2026-10-13
+
+- Linger=yes ✓. ABER: pennyroyal UND litellm waren nicht boot-aktiv
+  (is-enabled=generated, kein .wants-Symlink; litellm war manuell gestartet).
+- Fix gesetzt: Symlinks ~/.config/systemd/user/default.target.wants/
+  pennyroyal.service + litellm.service → /run/user/1000/systemd/generator/…
+  (Quadlet-Generator regeneriert die Units jeden Boot). Verifiziert:
+  `systemctl --user list-dependencies default.target | grep -cE 'pennyroyal|litellm'` = 2.
+- `pennyroyal-watchdog.timer` enabled+active (Restart bei API-Hang, GRACE 900 s).
+- **Bonsai :8080 hat KEIN Unit** (nackter Container) – nach Reboot manuell:
+  `~/work/llm-bonsai-kbuntu24/scripts/run.sh`; spaeter als Quadlet .container
+  ueberfuehren (To-do). Bonsai-Review antwortete nur ~30 Zeichen → ctx/parallel
+  Audit (config: ctx 4096, parallel 4) – fuer Reviews kuenftig ctx >= 8k oder
+  --parallel 2.
+- Pflicht-Check nach Reboot:
+  `curl -s 127.0.0.1:8001/health; curl -s -H "Authorization: Bearer \$LITELLM_MASTER_KEY" 127.0.0.1:4000/v1/models | head -c 80`
+  (Key aus ~/.config/litellm/.env).
+- Agent-Config-Audit: aider→litellm ✓ (base+model gesetzt), codex-cli 0.162.1
+  config.toml ✓ (never/danger-full = Operator-Wahl), copilot CLI 1.0.95 ✓,
+  hermes v0.21.6 ✓, opencode agent-Block leer = Defaults greifen (Rollen sind
+  als LiteLLM-Aliase registriert und per -m waehlbar).
+- Review-Rohmaterial: /tmp/reviews/review{1..5}-*.md (Korrektheit, Risiko,
+  Doku, Bonsai, Frisch-Session). opencode.json-Providerliste = Referenz fuer
+  Neuinstallation.
