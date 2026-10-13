@@ -2,7 +2,9 @@
 # lab – Status-Hub für das P16-Labor (VMs, Agenten, Builds, SR-IOV, Reviews).
 # Quelle: cachyos-kvm-lab/tools/lab  (Änderungen dort einpflegen + commit)
 # Nutzung: lab | lab status | lab agents | lab vm | lab venus | lab sriov |
-#          lab build | lab viewer <domain> | lab web | lab wiki | lab todo | lab help
+#          lab build | lab viewer <domain> | lab web | lab wiki | lab todo |
+#          lab refresh (schreibt memory/context/status.md) | lab help
+# Beim Login zeigt ~/.profile -> /usr/local/bin/lab-banner einen Kurzstatus.
 set -u
 R=/home/z000g9hu/work/cachyos-kvm-lab
 L=/home/z000g9hu/vm-lab
@@ -25,7 +27,7 @@ status(){
   sudo -n virsh list --all 2>/dev/null | tail -n +3 | sed 's/^/  /' || no "virsh nicht erreichbar (sudo -n?)"
   VBoxManage list runningvms 2>/dev/null | sed 's/^/  VBox laufend: /' || wa "VBox: Gruppe vboxusers evtl. erst nach Re-Login wirksam"
   pgrep -x vmware-vmx >/dev/null && ok "VMware-Gast läuft (vmx)" || wa "VMware: kein laufender Gast erkannt"
-  wm=$(sudo -n journalctl -k -b --no-pager 2>/dev/null | grep -ci vmwrite || echo 0)
+  wm=$(sudo -n journalctl -k -b --no-pager 2>/dev/null | grep -ci vmwrite || true); wm=${wm:-0}
   [ "$wm" = "0" ] && ok "KVM sauber (0 vmwrite-Fehler diesen Boot)" || no "KVM vmwrite-Fehler: $wm – NEUE VM-Starts vermeiden, Reboot nötig"
   ig=$(ls /sys/kernel/iommu_groups 2>/dev/null | wc -l)
   ok "IOMMU-Gruppen: $ig (Referenz VOR intel_iommu=on: 29 – Parameter wirkt erst nach Reboot vollständig)"
@@ -34,7 +36,7 @@ status(){
   elif [ -f "$L/vmvga/BUILD_ninja.log" ]; then p=$(grep -oE '\[[0-9]+/[0-9]+\]' "$L/vmvga/BUILD_ninja.log" | tail -1); wa "Build läuft… $p"
   elif [ -f "$L/vmvga/BUILD_config.log" ]; then wa "configure läuft (venv + Feature-Checks)…"; else wa "kein Build-Log"; fi
   hr; echo "NÄCHSTE SCHRITTE (Quelle: $R/TODO.md)"
-  sed -n '/## Reboot-Liste/,/^$/p' "$R/TODO.md" 2>/dev/null | sed '1,2d' | head -8 | sed 's/^/  /'
+  awk '/## Reboot-Liste/{f=1;next} f&&/^## /{exit} f' "$R/TODO.md" 2>/dev/null | grep -E '^[[:space:]]*[0-9]+\.' | head -4 | cut -c1-100 | sed 's/^/  /'
 }
 agents(){
   echo "AGENTEN / ENDPOINTS"; hr
@@ -108,11 +110,28 @@ web(){
   fi
   ( xdg-open http://127.0.0.1:8090/ >/dev/null 2>&1 & ) || echo "Bitte öffnen: http://127.0.0.1:8090"
 }
+refresh(){
+  local M=/home/z000g9hu/work/hermes-memory-workspace
+  local f="$M/context/status.md"
+  { echo "# status.md – Labor-Zustand (automatisch, von \`lab refresh\`)"
+    echo "_Generiert $(date '+%F %H:%M') · Details: \`lab\` · Wiki: cachyos-kvm-lab/docs/LABOR-WIKI.md · Offene Punkte: cachyos-kvm-lab/TODO.md_"
+    echo
+    bash "$0" status | sed 's/\x1b\[[0-9;]*m//g'
+    echo
+    echo "## Agenten-Hinweis"
+    echo "- Diese Datei ueberschreibt sich bei \`lab refresh\` selbst; vor Sessionstart pruefen, dann TODO.md abarbeiten."
+    echo "- Bench-Repo (Flottenmessung): ~/work/agent-bench (results.jsonl, evaluate.py)."
+    echo "- Falls \`lab\` fehlt: sudo install -m755 ~/work/cachyos-kvm-lab/tools/lab /usr/local/bin/lab"
+  } > "$f"
+  grep -q 'command -v lab-banner' ~/.profile || echo "HINWEIS: .profile-Banner fehlt noch (siehe Wiki Kap.0)."
+  echo "geschrieben → $f"
+}
 wiki(){ "${EDITOR:-less}" "$R/docs/LABOR-WIKI.md"; }
 todo(){ grep -nE '^\s{0,2}[0-9]+\.|^- \[ \]|^## ' "$R/TODO.md" | head -30; }
 
 case "${1:-status}" in
   status|"") status;; agents) agents;; vm) vm;; venus) venus;; sriov) sriov;;
   build) build;; viewer) viewer "${2:-kvm-siemens}";; web) web;; wiki) wiki;; todo) todo;;
-  help|*) sed -n '3,8p' "$0";;
+  refresh) refresh;;
+  help|*) sed -n '3,9p' "$0";;
 esac

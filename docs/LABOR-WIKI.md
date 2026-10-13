@@ -14,8 +14,14 @@
 | `lab build` | VMVGA-Fortschritt + Preflight |
 | `lab viewer <domain>` | virt-viewer mit korrekt ermitteltem DISPLAY/XAUTHORITY |
 | `lab web` | Browser-Dashboard (http://127.0.0.1:8090, Auto-Refresh 15 s) |
+| `lab refresh` | schreibt `hermes-memory-workspace/context/status.md` (Agenten-Handoff) |
 | `lab wiki` | dieses Wiki im Editor/less |
 | `lab todo` | TODO-Gerüst (Abschnitte + offene Punkte) |
+**Login-Banner**: jede neue Login-Shell zeigt oben automatisch den Mini-Status
+(`~/.profile`-Block ruft `lab-banner`, 1 s, `timeout 3`; unterdrücken mit
+`LAB_QUIET=1 bash -l`). Quelldateien `tools/lab` + `tools/lab-banner` hier im Repo.
+**status.md im Memory-Repo** ist die Maschine-lesbare Handoff-Datei: Agenten lesen
+sie beim Sessionstart; nach Änderungen `lab refresh` (überschreibt sich selbst).
 Installation: Quelldatei `tools/lab` hier im Repo → `sudo install -m755 tools/lab /usr/local/bin/lab`
 (bei Bedarf nach Reboot/Repo-Update neu installieren).
 
