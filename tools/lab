@@ -1,0 +1,118 @@
+#!/usr/bin/env bash
+# lab – Status-Hub für das P16-Labor (VMs, Agenten, Builds, SR-IOV, Reviews).
+# Quelle: cachyos-kvm-lab/tools/lab  (Änderungen dort einpflegen + commit)
+# Nutzung: lab | lab status | lab agents | lab vm | lab venus | lab sriov |
+#          lab build | lab viewer <domain> | lab web | lab wiki | lab todo | lab help
+set -u
+R=/home/z000g9hu/work/cachyos-kvm-lab
+L=/home/z000g9hu/vm-lab
+export LITELLM_MASTER_KEY="${LITELLM_MASTER_KEY:-$(grep -m1 LITELLM_MASTER_KEY ~/.config/litellm/.env 2>/dev/null | cut -d= -f2)}"
+hr(){ printf '\033[2m──────────────────────────────────────────────\033[0m\n'; }
+ok(){ printf '  \033[32m●\033[0m %s\n' "$1"; }
+no(){ printf '  \033[31m●\033[0m %s\n' "$1"; }
+wa(){ printf '  \033[33m●\033[0m %s\n' "$1"; }
+
+status(){
+  echo "════════ LABOR-STATUS  $(date '+%a %d.%m. %H:%M') ════════"
+  hr; echo "AGENTEN-INFRA"
+  h=$(curl -s --max-time 3 http://127.0.0.1:8001/health >/dev/null 2>&1 && echo 1)
+  [ -n "$h" ] && ok "pennyroyal :8001 (sglang, 512k ctx, c8)" || no "pennyroyal :8001 DOWN – systemd --user restart pennyroyal"
+  m=$(curl -s --max-time 3 -H "Authorization: Bearer $LITELLM_MASTER_KEY" http://127.0.0.1:4000/v1/models 2>/dev/null | grep -o '"id"' | wc -l || true)
+  [ "${m:-0}" -gt 0 ] && ok "litellm :4000 (${m} Modelle/Aliase)" || no "litellm :4000 DOWN – systemctl --user restart litellm"
+  curl -s --max-time 3 http://127.0.0.1:8080/health >/dev/null 2>&1 && ok "bonsai :8080 (n_ctx 98304, 2 Slots – KEIN Autostart!)" || wa "bonsai :8080 inaktiv – ~/work/llm-bonsai-kbuntu24/scripts/run.sh"
+  systemctl --user is-active pennyroyal-watchdog.timer >/dev/null 2>&1 && ok "watchdog-timer aktiv" || wa "watchdog-timer aus"
+  hr; echo "VIRTUALISIERUNG"
+  sudo -n virsh list --all 2>/dev/null | tail -n +3 | sed 's/^/  /' || no "virsh nicht erreichbar (sudo -n?)"
+  VBoxManage list runningvms 2>/dev/null | sed 's/^/  VBox laufend: /' || wa "VBox: Gruppe vboxusers evtl. erst nach Re-Login wirksam"
+  pgrep -x vmware-vmx >/dev/null && ok "VMware-Gast läuft (vmx)" || wa "VMware: kein laufender Gast erkannt"
+  wm=$(sudo -n journalctl -k -b --no-pager 2>/dev/null | grep -ci vmwrite || echo 0)
+  [ "$wm" = "0" ] && ok "KVM sauber (0 vmwrite-Fehler diesen Boot)" || no "KVM vmwrite-Fehler: $wm – NEUE VM-Starts vermeiden, Reboot nötig"
+  ig=$(ls /sys/kernel/iommu_groups 2>/dev/null | wc -l)
+  ok "IOMMU-Gruppen: $ig (Referenz VOR intel_iommu=on: 29 – Parameter wirkt erst nach Reboot vollständig)"
+  hr; echo "VMVGA-BUILD"
+  if grep -q 'BUILD_RC=0' "$L/vmvga/BUILD_ninja.log" 2>/dev/null; then ok "Build FERTIG → $L/vmvga/check-binary.sh ausführen (lab build zeigt Details)"
+  elif [ -f "$L/vmvga/BUILD_ninja.log" ]; then p=$(grep -oE '\[[0-9]+/[0-9]+\]' "$L/vmvga/BUILD_ninja.log" | tail -1); wa "Build läuft… $p"
+  elif [ -f "$L/vmvga/BUILD_config.log" ]; then wa "configure läuft (venv + Feature-Checks)…"; else wa "kein Build-Log"; fi
+  hr; echo "NÄCHSTE SCHRITTE (Quelle: $R/TODO.md)"
+  sed -n '/## Reboot-Liste/,/^$/p' "$R/TODO.md" 2>/dev/null | sed '1,2d' | head -8 | sed 's/^/  /'
+}
+agents(){
+  echo "AGENTEN / ENDPOINTS"; hr
+  echo " Kurz-Guide:"
+  cat <<'EOT'
+  curl -s -H "Authorization: Bearer \$LITELLM_MASTER_KEY" \
+       http://127.0.0.1:4000/v1/models | jq -r '.data[].id'   # Aliase
+  opencode run -m litellm/local-qwen-38-flash-next "..."      # frische Session
+  aider --no-git --dry-run --message "..."                    # Review ohne Edits
+  codex exec --skip-git-repo-check -c model_provider=litellm -m luna-gpt-60 "..."
+  hermes chat --oneshot -q "..."
+  copilot -p "..."     (kein --no-pty! einzeilig!)
+  Bonsai direkt:  curl :8080/v1/chat/completions  (max 1 Review-Prozess/Tag)
+EOT
+  hr; echo "Live-Status:"; status
+}
+vm(){ sudo -n virsh list --all; echo; VBoxManage list vms 2>/dev/null; }
+venus(){
+  cat <<EOT
+VM kvm-venus – Aufbau nach Reboot (Reihenfolge!):
+  1. lab status  →  KVM muss 'sauber' zeigen
+  2. sudo mkdir -p /etc/apparmor.d/local/abstractions
+     echo ' owner /var/lib/libvirt/qemu/*.spice rw,' | sudo tee -a /etc/apparmor.d/local/abstractions/libvirt-qemu
+  3. sudo setfacl -m u:libvirt-qemu:rw /dev/dri/renderD128
+  4. sudo virsh define $L/kvm-venus.xml
+  5. sudo virsh start kvm-venus
+  6. lab viewer kvm-venus
+Details: $R/TODO.md · Schema-Hinweise: $L/reviews/20261013*
+EOT
+}
+sriov(){
+  echo "iGPU SR-IOV (Doppelkernel-Strategie)"; hr
+  dpkg -l linux-image-6.8.0-146-generic 2>/dev/null | grep -q ^ii && ok "Kernel 6.8.0-146 installiert (GRUB-Auswahl möglich)" || no "6.8-Kernel fehlt"
+  if [ "$(uname -r)" = "6.8.0-146-generic" ]; then
+    ok "Du bootest bereits 6.8 – Ausführung jetzt sinnvoll:"
+    echo "  bash $L/sriov-dualkernel-setup.sh    ( Intel DKMS nur für diesen Kernel)"
+    echo "  sudo bash $L/sriov-verify.sh         (nach Reboot zurück auf 6.8)"
+  else
+    wa "Aktueller Boot: $(uname -r) – Setup-Skript bewusst HIER nicht laufen lassen"
+    echo "  Ablauf: [nach Reboot auf 7.0] bash $L/sriov-dualkernel-setup.sh  →  einmal reboot → GRUB '6.8.0-146' wählen → sudo bash $L/sriov-verify.sh"
+  fi
+  echo "  Hardware-Kontext: sriov_totalvfs=$(cat /sys/bus/pci/devices/0000:00:02.0/sriov_totalvfs 2>/dev/null || echo '?'), VF-Lastigkeit QSV-Encoder; Intel-DKMS baut NICHT gegen 7.0 (deshalb 6.8)."
+}
+build(){
+  echo "VMVGA Build (QEMU 11.1.1 + Overlay v1.03)"; hr
+  tail -3 "$L/vmvga/BUILD_ninja.log" 2>/dev/null
+  grep 'BUILD_RC' "$L/vmvga/BUILD_ninja.log" 2>/dev/null && { echo; "$L/vmvga/check-binary.sh" 2>&1 | tail -12; }
+  echo "Wiki: $R/vmvga-lab/RESULT.md"
+}
+viewer(){
+  local dom="${1:-kvm-siemens}"
+  eval "$(systemctl --user show-environment 2>/dev/null | grep -E '^(DISPLAY|XAUTHORITY|WAYLAND_DISPLAY|XDG_RUNTIME_DIR)=' | tr '\n' ' ')"
+  export DISPLAY="${DISPLAY:-:1}"
+  local uri; uri=$(sudo -n virsh domdisplay "$dom" 2>/dev/null)
+  [ -z "$uri" ] && { echo "Domain $dom nicht laufend?"; exit 1; }
+  case "$uri" in spice*) exec virt-viewer -c qemu:///system "$dom";; *) exec virt-viewer -c qemu:///system "$dom";; esac
+}
+web(){
+  local page="$L/dashboard"; mkdir -p "$page"
+  local body; body=$(bash "$0" status | sed 's/\x1b\[[0-9;]*m//g; s/&/\&amp;/g; s/</\&lt;/g')
+  { echo '<!doctype html><meta charset=utf-8><meta http-equiv=refresh content="15"><title>LAB P16</title>'
+    echo '<style>body{background:#111;color:#ddd;font:14px/1.5 monospace;margin:2em}h1{color:#7df}pre{background:#1b1b1b;padding:1em;border-radius:8px;overflow:auto}.g{color:#5f5}.r{color:#f55}.y{color:#fd5}a{color:#9cf}</style>'
+    echo "<h1>🖥 P16 Labor-Dashboard <small>$(date '+%H:%M:%S')</small></h1>"
+    echo "<pre>${body//$'\n'/&#10;}</pre>"
+    echo '<h3>Links</h3><ul><li><a href="file://'"$R"'/docs/LABOR-WIKI.md">Labor-WIKI</a></li><li><a href="file://'"$R"'/TODO.md">TODO (Handreichung nach Reboot)</a></li><li><a href="file://'"$R"'/vmvga-lab/RESULT.md">VMVGA RESULT</a></li><li><a href="file://'"$R"'/reviews/20261013b/">Flotten-Reviews Runde 2</a></li></ul>'
+    echo '<p class=y>Auto-Refresh 15 s · Server stoppen: fuser -k 8090/tcp</p>'
+  } > "$page/index.html"
+  if ! curl -s --max-time 1 -o /dev/null http://127.0.0.1:8090/ 2>/dev/null; then
+    nohup python3 -m http.server 8090 --bind 127.0.0.1 -d "$page" >/dev/null 2>&1 &
+    sleep 0.5
+  fi
+  ( xdg-open http://127.0.0.1:8090/ >/dev/null 2>&1 & ) || echo "Bitte öffnen: http://127.0.0.1:8090"
+}
+wiki(){ "${EDITOR:-less}" "$R/docs/LABOR-WIKI.md"; }
+todo(){ grep -nE '^\s{0,2}[0-9]+\.|^- \[ \]|^## ' "$R/TODO.md" | head -30; }
+
+case "${1:-status}" in
+  status|"") status;; agents) agents;; vm) vm;; venus) venus;; sriov) sriov;;
+  build) build;; viewer) viewer "${2:-kvm-siemens}";; web) web;; wiki) wiki;; todo) todo;;
+  help|*) sed -n '3,8p' "$0";;
+esac
