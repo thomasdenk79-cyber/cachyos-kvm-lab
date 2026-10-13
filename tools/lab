@@ -121,10 +121,25 @@ refresh(){
     echo "## Agenten-Hinweis"
     echo "- Diese Datei ueberschreibt sich bei \`lab refresh\` selbst; vor Sessionstart pruefen, dann TODO.md abarbeiten."
     echo "- Bench-Repo (Flottenmessung): ~/work/agent-bench (results.jsonl, evaluate.py)."
+    pgrep -f watchdog_night.sh >/dev/null && echo "- NACHT-WATCHDOG laeuft (Selbstheilung alle 20min)" || echo "- Nacht-WATCHDOG aus (starten: bash ~/work/agent-bench/watchdog_night.sh)"
     echo "- Falls \`lab\` fehlt: sudo install -m755 ~/work/cachyos-kvm-lab/tools/lab /usr/local/bin/lab"
   } > "$f"
   grep -q 'command -v lab-banner' ~/.profile || echo "HINWEIS: .profile-Banner fehlt noch (siehe Wiki Kap.0)."
   echo "geschrieben → $f"
+}
+gpu(){
+  echo "GPU-Auslastung (5 Samples a 1s) – Prozesszuordnung unten"
+  nvidia-smi --query-gpu=index,name,utilization.gpu,memory.used,memory.total --format=csv,noheader \
+    | awk -F', ' -v c=0 '{printf "  GPU%s %s: %s%% util, %s / %s\n",""$1,$2,$3,$4,$5}'
+  for i in 1 2 3 4 5; do
+    nvidia-smi --query-gpu=utilization.gpu --format=csv,noheader,nounits \
+      | tr '\n' ' ' | awk '{printf "  [%d] GPU0:%s%% GPU1:%s%%\n",'"$i"',$1,$2}'
+    sleep 1
+  done
+  echo "  Prozesse:"
+  nvidia-smi --query-compute-apps=gpu_uuid,pid,used_memory --format=csv,noheader 2>/dev/null | head -8 | sed 's/^/    /'
+  echo '  Zuordnung: sglab/launch_server-PIDs = pennyroyal, llama-server-PIDs = bonsai (siehe Spalte PID oben)'
+  curl -s --max-time 2 http://127.0.0.1:8080/health >/dev/null 2>&1 && echo "  bonsai-Endpunkt: HEALTHY" || echo "  bonsai-Endpunkt: WEG"
 }
 wiki(){ "${EDITOR:-less}" "$R/docs/LABOR-WIKI.md"; }
 todo(){ grep -nE '^\s{0,2}[0-9]+\.|^- \[ \]|^## ' "$R/TODO.md" | head -30; }
@@ -132,6 +147,6 @@ todo(){ grep -nE '^\s{0,2}[0-9]+\.|^- \[ \]|^## ' "$R/TODO.md" | head -30; }
 case "${1:-status}" in
   status|"") status;; agents) agents;; vm) vm;; venus) venus;; sriov) sriov;;
   build) build;; viewer) viewer "${2:-kvm-siemens}";; web) web;; wiki) wiki;; todo) todo;;
-  refresh) refresh;;
+  refresh) refresh;; gpu) gpu;;
   help|*) sed -n '3,9p' "$0";;
 esac
