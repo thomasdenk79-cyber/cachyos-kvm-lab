@@ -1,0 +1,67 @@
+<domain type='kvm' xmlns:qemu='http://libvirt.org/schemas/domain/qemu/1.0'>
+  <!-- win11-vmvga-test: VMVGA-3D-Testgast. Erzeugt 2026-10-13.
+       libvirt 10.0 kennt weder Modell 'vmvga' noch <vmport/> im Schema ->
+       beides über qemu:commandline (Auftrag: Geraet genau einmal).
+       PRUEFPFLICHT nach virsh define: virsh domxml-to-native qemu-argv datei
+       -> genau EIN grafikgeraet, vmport=on gemergt? Sonst raw-Helfer nutzen. -->
+  <name>win11-vmvga-test</name>
+  <memory unit='GiB'>16</memory>
+  <currentMemory unit='GiB'>16</currentMemory>
+  <vcpu placement='static'>8</vcpu>
+  <os firmware='efi'>
+    <type arch='x86_64' machine='pc-q35-noble'>hvm</type>
+    <boot dev='cdrom'/>
+    <boot dev='hd'/>
+  </os>
+  <features>
+    <acpi/>
+    <apic/>
+    <hyperv mode='custom'>
+      <relaxed state='on'/><vapic state='on'/><spinlocks state='on' retries='8191'/>
+    </hyperv>
+    <vmport state='on'/>  <!-- UNSICHER ob Schema das kennt: Fallback qemu:arg -machine vmport=on unten -->
+  </features>
+  <cpu mode='host-passthrough' check='none' migratable='off'>
+    <topology sockets='1' dies='1' cores='8' threads='1'/>
+  </cpu>
+  <clock offset='utc'>
+    <timer name='rtc' tickpolicy='catchup'/><timer name='hpet' present='no'/><timer name='hypervclock' present='yes'/>
+  </clock>
+  <on_poweroff>destroy</on_poweroff>
+  <on_reboot>restart</on_reboot>
+  <on_crash>destroy</on_crash>
+  <devices>
+    <emulator>/opt/qemu-vmvga/11.1.1-vmvga1.03/bin/qemu-system-x86_64</emulator>
+    <disk type='file' device='disk'>
+      <driver name='qemu' type='qcow2' cache='writeback' io='threads'/>
+      <source file='/var/lib/libvirt/images/win11-vmvga-test.qcow2'/>
+      <target dev='sda' bus='sata'/>
+      <boot order='2'/>
+    </disk>
+    <disk type='file' device='cdrom'>
+      <driver name='qemu' type='raw'/>
+      <source file='/media/z000g9hu/Ventoy/ISO/Imported/Win11_25H2_English_x64_v2.iso'/>
+      <target dev='sdb' bus='sata'/>
+      <readonly/>
+      <boot order='1'/>
+    </disk>
+    <controller type='sata' index='0'><address type='pci' domain='0x0000' bus='0x1f' slot='0x1f' function='0x2'/></controller>
+    <controller type='usb' index='0' model='qemu-xhci'/>
+    <interface type='network'>
+      <source network='default'/>
+      <model type='e1000e'/>
+    </interface>
+    <tpm model='tpm-crb'>
+      <backend type='emulator' version='2.0'/>
+    </tpm>
+    <console type='pty'><target type='isa-serial' port='0'/></console>
+    <input type='tablet' bus='usb'/>
+    <graphics type='spice' socket='/var/lib/libvirt/qemu/win11-vmvga-test.spice' autoport='no' keymap='de'/>
+    <!-- bewusst KEIN <video>: vmvga kommt per commandline und muss das EINZIGE
+         Grafikgeraet sein. Falls libvirt trotzdem -vga bochs einschiebt: raw-Helfer. -->
+    <qemu:commandline>
+      <qemu:arg value='-device'/>
+      <qemu:arg value='vmvga,3d=on,vgamem_mb=128'/>
+    </qemu:commandline>
+  </devices>
+</domain>

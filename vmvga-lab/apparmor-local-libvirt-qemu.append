@@ -1,0 +1,10 @@
+# VMVGA-Lab: gezielte Erweiterung fuer /opt-Emulator (libvirt-QEMU-Prozess).
+# Rueckbau: diese Datei wieder leeren und `sudo apparmor_parser -r /etc/apparmor.d/abstractions/libvirt-qemu`?
+# (Profil wird pro VM-Neustart neu generiert; libvirtd reload genuegt nicht – Profil-Lokaldatei wirkt beim naechsten VM-Start.)
+/opt/qemu-vmvga/** r,
+/opt/qemu-vmvga/*/bin/qemu-system-x86_64 Cxmr,
+/opt/dxvk-vmvga/** rm,
+/opt/dxvk-vmvga/*/lib64/libdxvk_d3*.so* mr,
+/media/z000g9hu/Ventoy/ISO/Imported/*.iso r,
+/run/udev/data/+drm:renderD* r,
+/dev/dri/renderD12[89] rw,

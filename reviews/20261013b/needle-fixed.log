@@ -1,0 +1,5 @@
+qwen-needle-430k FEHLER 400 HTTP Error 400: Bad Request
+qwen-needle-120k pt=288547 ct=64 s=25.0 needle=FEHLER
+bonsai-needle-3k pt=7303 ct=80 s=10.3 needle=OK
+bonsai-needle-88k FEHLER 400 HTTP Error 400: Bad Request
+deepseek-needle-60k pt=126190 ct=64 s=93.9 needle=OK
