@@ -6,6 +6,23 @@ Aktionen: `workstation-setup/docs/virtualisierung-labor-20261013.md`
 
 ## SofortBLOCKER: Host-KVM defekt → Reboot nötig
 
+- Nach dem Reboot sollen genau zwei separate Test-VMs weitergebaut werden:
+  1. `kvm-venus`: CachyOS-Gast mit VirtIO-GPU/Venus testen; XML-Vorlage
+     `/home/z000g9hu/vm-lab/kvm-venus.xml` (derzeit laut Live-`virsh list --all`
+     noch nicht definiert).
+  2. `win11-vmvga-test`: Windows-11-Gast mit dem isolierten QEMU-11.1.1 +
+     `qemus/qemu-vmvga` v1.03-Fork und VMware-SVGA3D-Gasttreiber testen;
+     Definition `vmvga-lab/xml/win11-vmvga-test.xml`. Das ist ein emuliertes
+     VMware-SVGA-Geraet, kein physisches GPU-Passthrough. Der signierte
+     VMware-SVGA-Treiber ist separat im Gast zu beschaffen.
+- VMVGA-Build aktuell unvollstaendig: Quellen/Overlay in
+  `/home/z000g9hu/vm-lab/vmvga/` vorhanden, aber kein Ninja-Log, kein aktiver
+  Buildprozess, kein installiertes Binary. Ist-Stand in `vmvga-lab/RESULT.md`.
+- Nach dem Reboot zuerst KVM-Gesundheit verifizieren, dann die beiden
+  Testpfade getrennt und der jeweiligen Doku folgen lassen. `kvm-siemens` und
+  die laufende VMware-GW2-VM nicht fuer diese Tests umkonfigurieren.
+
+
 - Symptom: jede neue KVM-VM `paused`, dmesg `kvm_intel: vmwrite failed / Invalid VMCS`
   (≥116 Einträge), QEMU `KVM: entry failed, hardware error 0x0`.
 - Ursache: VMX-State-Korruption (Auslöser: Triple-Fault der ersten virtio-gl-VM +
@@ -16,16 +33,32 @@ Aktionen: `workstation-setup/docs/virtualisierung-labor-20261013.md`
 - Nebenbedingung: User testet parallel VMware (GW2-Install) + VirtualBox
   (Win11-Install) – Reboot nur nach Benutzerfreigabe. Beide sind nicht betroffen.
 
-## Reboot-Liste (ein Fenster, alles zugleich)
+## iGPU-Passthrough: gestufter GRUB-Testplan (2026-10-13)
+
+- Gewuenschter erster Test: ausschliesslich `intel_iommu=on`, ausdruecklich
+  ohne `iommu=pt`; weitere Kernelparameter und IGD-XML-Optionen erst nach
+  Auswertung dieses isolierten Boot-/VM-Tests.
+- Der erste Schritt ist in `/etc/default/grub` eingetragen und `update-grub`
+  lief erfolgreich. Er ist bis zum Neustart NICHT aktiv. Sicherung:
+  `/etc/default/grub.bak-pre-igd-iommu-20261013-193459`.
+- Verifikation nach Boot: `intel_iommu=on` in `/proc/cmdline`, DMAR/IOMMU-
+  Meldungen und Gruppen pruefen; danach `kvm-siemens` starten und Windows-iGPU/
+  Code 43 pruefen. Bei Regression GRUB-Sicherung zurueckspielen und `update-grub`.
+- Vor Host-Reboot Gast sauber herunterfahren; `kvm-siemens` war bei der letzten
+  Pruefung RUNNING. Reboot nur nach Freigabe im passenden Wartungsfenster.
+- SR-IOV ist ausgeschlossen; KWin/Host-Desktop bleibt auf NVIDIA.
 
 1. **KVM-Gesundheitstest** (siehe oben).
-2. **IOMMU aktiv?** `intel_iommu=on iommu=pt` ist bereits in /etc/default/grub
-   + update-grub ausgeführt (Backup `/etc/default/grub.bak-pre-iommu-20261013`).
-   Prüfen: `dmesg | grep -iE 'iommu|dmar|DMAR'` und
-   `find /sys/kernel/iommu_groups -type l | wc -l` (Referenz VOR dem Patch:
-   bereits 29 Gruppen – Intel-IOMMU war Kernel-default-on; neu ist v.a. `pt`).
-   Notfall beim Boot: GRUB-Menü `e`, beide Wörter löschen. Dauerhaft revert:
-   `sudo sed -i 's/ intel_iommu=on iommu=pt//' /etc/default/grub && sudo update-grub`.
+2. **IOMMU/IGD-Test in Einzelschritten**: Schritt 1 ist nur `intel_iommu=on`
+   (ohne `iommu=pt`). In `/etc/default/grub` gesetzt und `update-grub`
+   erfolgreich; noch nicht aktiv bis Host-Reboot. Backup:
+   `/etc/default/grub.bak-pre-igd-iommu-20261013-193459`.
+   Vor Reboot `kvm-siemens` sauber herunterfahren. Nach Boot `/proc/cmdline`,
+   DMAR/IOMMU-Logs und Gruppen pruefen; erst danach VM starten und Windows-Code
+   43/iGPU testen. Regression: GRUB-Backup wiederherstellen und update-grub.
+   Bis Testergebnis keine weiteren Kernelparameter, keine IGD-XML-Aenderung.
+   Danach einzeln QEMU-IGD-Optionen (OpRegion/GMS/Gast-BDF) gegen Intel/QEMU-Doku
+   bewerten. SR-IOV ist ausgeschlossen; KWin bleibt auf NVIDIA.
 3. **Venus-VM zu Ende bauen**. STATUS-KORREKTUR (Review F1): kvm-venus ist
    aktuell NICHT definiert (nur Disk/ISO/OVMF-Template existieren); Definition
    liegt als Datei bereit: `/home/z000g9hu/vm-lab/kvm-venus.xml` – zuerst

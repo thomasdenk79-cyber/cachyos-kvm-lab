@@ -21,8 +21,8 @@ Stand: 2026-10-13 (nachts), ThinkPad P16 Gen2, Kubuntu 24.04.2 (Noble), Kernel 7
 - Overlay-Manifest: 38 Dateien unter hw/ (BUILD_OVERLAY_MANIFEST.txt), Kopie exakt wie im README beschrieben (komplettes hw/-Overlay, KEINE git-History-Änderungen)
 - qemu-windows-Dockerfile **nur referenziert**: WinBoat nutzt qemu-helios(helios-11.1.1)+qemu-render(v1.2.0)+virglrenderer-Pin+vmvga-Overlay+Aufsaetze (inkl. 0004-vmport-tss-user-io.patch). Unser Build laeuft bewusst ohne Helios/virgl-Kopplung, reines upstream QEMU+Overlay.
 
-## 2. Build
-- Build-Dir: ~/vm-lab/vmvga/build, Flags siehe build.sh. Status: **laeuft** (configure->ninja verkettet, Logs BUILD_config.log / BUILD_ninja.log, Ziel nur qemu-system-x86_64 qemu-img qemu-storage-daemon qemu-pr-helper).
+## VMVGA Build
+- Build-Dir: ~/vm-lab/vmvga/build, Flags siehe build.sh. Status: **abgebrochen/unvollstaendig (Stand 2026-10-13 15:20)**: Source + qemu-vmvga-Overlay liegen vor, Configure endete bei Python/venv-Paketen; kein aktiver Buildprozess, kein BUILD_ninja.log und kein installiertes QEMU-Binary. Log: `~/vm-lab/vmvga/BUILD_config.log`.
 - Installationsziel privat: `/opt/qemu-vmvga/11.1.1-vmvga1.03/` – **System-QEMU unangetastet**, kein LD_LIBRARY_PATH global, kein Distro-Upgrade (20 Buildpakete gezielt installiert).
 - Preflight (nach Build): check-binary.sh erfasst --version/-accel/-device vmvga,help/-display/ldd/DXVK-dlopen (logs/).
 
